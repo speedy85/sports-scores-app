@@ -10,7 +10,7 @@ const data = await response.json()
 
 nbaContainer.innerHTML = ""
 
-data.data.forEach(game=>{
+data.data.slice(0,3).forEach(game=>{
 
 const home = game.home_team.full_name
 const visitor = game.visitor_team.full_name
@@ -92,7 +92,7 @@ const data = await response.json()
 
 footballContainer.innerHTML=""
 
-data.matches.slice(0,10).forEach(match=>{
+data.matches.slice(0,3).forEach(match=>{
 
 const home = match.homeTeam.name
 const away = match.awayTeam.name
