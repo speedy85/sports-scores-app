@@ -3,7 +3,7 @@ const nbaContainer = document.getElementById("nba-games")
 async function loadNBAGames(){
 
 const response = await fetch(
-"https://www.balldontlie.io/api/v1/games?team_ids[]=2&per_page=10"
+"https://corsproxy.io/?https://www.balldontlie.io/api/v1/games?team_ids[]=2&per_page=3"
 )
 
 const data = await response.json()
@@ -80,7 +80,7 @@ const footballContainer = document.getElementById("football-games")
 async function loadFootballGames(){
 
 const response = await fetch(
-"https://api.football-data.org/v4/teams/81/matches",
+"https://corsproxy.io/?https://api.football-data.org/v4/teams/81/matches",
 {
 headers:{
 "X-Auth-Token":"d9c875574fb7426eab05d3e355a67038"
