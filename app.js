@@ -86,7 +86,7 @@ async function loadFootballGames(){
       "https://corsproxy.io/?https://api.football-data.org/v4/teams/81/matches",
       {
         headers:{
-          "X-Auth-Token": FOOTBALL_API_KEY
+          "X-Auth-Token": d9c875574fb7426eab05d3e355a67038
         }
       }
     )
