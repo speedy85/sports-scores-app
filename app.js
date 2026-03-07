@@ -49,7 +49,7 @@ loadNBAGames()
 async function loadNBADetails(gameId){
 
 const stats = await fetch(
-`https://www.balldontlie.io/api/v1/stats?game_ids[]=${gameId}`
+`https://corsproxy.io/?https://www.balldontlie.io/api/v1/stats?game_ids[]=${gameId}`
 )
 
 const data = await stats.json()
