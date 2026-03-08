@@ -9,30 +9,31 @@ export default async function handler(req, res) {
   const BASE_URL = 'https://api.balldontlie.io/v1';
 
   try {
-    // 1. Pobieramy 5 ostatnich meczów z sezonu 2025
-    const gamesRes = await fetch(`${BASE_URL}/games?team_ids[]=2&seasons[]=2025&per_page=5&order_by=date&direction=desc`, {
+    // 1. Pobieramy 15 ostatnich meczów z sezonu 2025
+    const gamesRes = await fetch(`${BASE_URL}/games?team_ids[]=2&seasons[]=2025&per_page=15&order_by=date&direction=desc`, {
       headers: { 'Authorization': API_KEY }
     });
     const gamesJson = await gamesRes.json();
-    
-    // Filtrujemy tylko te z wynikiem
+
+    // Filtrujemy tylko te, które mają wynik (czyli już się odbyły)
     const lastThree = gamesJson.data
-      .filter(g => g.home_team_score > 0)
+      .filter(g => g.home_team_score > 0 || g.visitor_team_score > 0)
       .slice(0, 3);
 
-    // 2. Pobieramy statystyki (DODANO seasons[]=2025 dla stabilności)
+    // 2. Pobieramy statystyki dla tych konkretnych 3 meczów
     const gamesWithStats = await Promise.all(lastThree.map(async (game) => {
       try {
-        // Dodanie seasons[]=2025 tutaj pomaga API szybciej przeszukać bazę zawodników
+        // Dodajemy seasons[]=2025 również tutaj, by API nie "skakało" w czasie
         const statsRes = await fetch(`${BASE_URL}/stats?game_ids[]=${game.id}&seasons[]=2025`, {
           headers: { 'Authorization': API_KEY }
         });
         const statsJson = await statsRes.json();
 
         const getTopScorers = (teamId) => {
-          if (!statsJson.data) return [];
+          if (!statsJson.data || statsJson.data.length === 0) return [];
+          
           return statsJson.data
-            .filter(s => s.team.id === teamId && s.pts > 0)
+            .filter(s => s.team.id === teamId && s.pts !== null)
             .sort((a, b) => b.pts - a.pts)
             .slice(0, 3)
             .map(s => ({
