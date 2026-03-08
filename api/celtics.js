@@ -1,5 +1,4 @@
 export default async function handler(req, res) {
-  // Nagłówki CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
@@ -9,30 +8,35 @@ export default async function handler(req, res) {
   const API_KEY = 'bc812243-8839-4458-8d9d-ea96cd3f371e';
   const BASE_URL = 'https://api.balldontlie.io/v1';
 
+  // Generujemy datę sprzed tygodnia, żeby mieć pewność, że złapiemy ostatnie mecze
+  const today = new Date();
+  const weekAgo = new Date();
+  weekAgo.setDate(today.getDate() - 14); // Sprawdzamy ostatnie 2 tygodnie
+  const startDate = weekAgo.toISOString().split('T')[0];
+
   try {
-    // 1. Pobieramy mecze (tylko 3, żeby nie przeciążać funkcji)
-    const gamesRes = await fetch(`${BASE_URL}/games?team_ids[]=2&seasons[]=2025&per_page=3&order_by=date&direction=desc`, {
+    // 1. Szukamy meczów od konkretnej daty (styczeń 2026), posortowanych malejąco
+    const gamesRes = await fetch(`${BASE_URL}/games?team_ids[]=2&start_date=${startDate}&order_by=date&direction=desc`, {
       headers: { 'Authorization': API_KEY }
     });
 
-    if (!gamesRes.ok) throw new Error(`Błąd meczów: ${gamesRes.status}`);
     const gamesJson = await gamesRes.json();
 
-    // 2. Pobieramy statystyki dla każdego meczu po kolei (bezpieczniej niż Promise.all przy limitach API)
-    const gamesWithStats = [];
-    
-    for (const game of gamesJson.data) {
+    // 2. Filtrujemy tylko te, które już się odbyły (wynik > 0) i bierzemy 3
+    const lastThree = gamesJson.data
+      .filter(g => g.home_team_score > 0 || g.visitor_team_score > 0)
+      .slice(0, 3);
+
+    const gamesWithStats = await Promise.all(lastThree.map(async (game) => {
       try {
-        const statsRes = await fetch(`${BASE_URL}/stats?game_ids[]=${game.id}&per_page=50`, {
+        const statsRes = await fetch(`${BASE_URL}/stats?game_ids[]=${game.id}`, {
           headers: { 'Authorization': API_KEY }
         });
-        
-        if (!statsRes.ok) throw new Error('Błąd statystyk');
         const statsJson = await statsRes.json();
 
         const getTopScorers = (teamId) => {
           return statsJson.data
-            .filter(s => s.team.id === teamId && s.pts !== null)
+            .filter(s => s.team.id === teamId && s.pts > 0)
             .sort((a, b) => b.pts - a.pts)
             .slice(0, 3)
             .map(s => ({
@@ -41,21 +45,18 @@ export default async function handler(req, res) {
             }));
         };
 
-        gamesWithStats.push({
+        return {
           ...game,
           home_top_scorers: getTopScorers(game.home_team.id),
           visitor_top_scorers: getTopScorers(game.visitor_team.id)
-        });
-      } catch (err) {
-        // Jeśli statystyki padną, dodajemy mecz bez nich zamiast wywalać cały serwer
-        gamesWithStats.push({ ...game, home_top_scorers: [], visitor_top_scorers: [] });
+        };
+      } catch (e) {
+        return { ...game, home_top_scorers: [], visitor_top_scorers: [] };
       }
-    }
+    }));
 
     return res.status(200).json({ data: gamesWithStats });
-
   } catch (error) {
-    console.error("BŁĄD VERCEL:", error.message);
-    return res.status(500).json({ error: "Błąd serwera", details: error.message });
+    return res.status(500).json({ error: error.message });
   }
 }
