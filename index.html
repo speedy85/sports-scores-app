@@ -1,85 +1,17 @@
 <!DOCTYPE html>
-<html>
+<html lang="pl">
 <head>
-
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<title>Sports Scores</title>
-
-<style>
-
-body{
-font-family:Arial;
-margin:0;
-background:#f4f4f4;
-}
-
-header{
-background:black;
-color:white;
-padding:15px;
-font-size:22px;
-}
-
-.section{
-padding:15px;
-}
-
-.match{
-background:white;
-margin-bottom:10px;
-padding:15px;
-border-radius:8px;
-cursor:pointer;
-}
-
-.score{
-font-size:24px;
-font-weight:bold;
-}
-
-.team{
-font-size:16px;
-}
-
-.details{
-display:none;
-margin-top:10px;
-font-size:14px;
-}
-
-</style>
-
+    <meta charset="UTF-8">
+    <title>Wyniki Celtics</title>
+    <style>
+        body { font-family: sans-serif; background: #111; color: white; text-align: center; }
+        .game { border: 1px solid #008348; margin: 10px auto; padding: 15px; width: 300px; border-radius: 8px; }
+        h1 { color: #008348; }
+    </style>
 </head>
-
 <body>
-
-<header>
-Sports Scores
-</header>
-
-<div class="section">
-
-<h2>Boston Celtics</h2>
-
-<div id="nba-games">
-Loading NBA games...
-</div>
-
-</div>
-
-<div class="section">
-
-<h2>FC Barcelona</h2>
-
-<div id="football-games">
-Loading football games...
-</div>
-
-</div>
-
-<script src="app.js"></script>
-
+    <h1>Ostatnie mecze Boston Celtics</h1>
+    <div id="results">Ładowanie wyników...</div>
+    <script src="script.js"></script>
 </body>
 </html>
